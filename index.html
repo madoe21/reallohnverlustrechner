@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Reallohnverlust-Rechner | Kaufkraft & Inflation berechnen – madoe21</title>
+<meta name="description" content="Berechne deinen individuellen Reallohnverlust durch Inflation und Abgaben. Mit jährlicher Steuerklasse, Kinderfreibetrag, Kirchensteuer und KK-Zusatzbeitrag. Inkl. Grafiken und Tabellen.">
+<meta name="author" content="madoe21">
+<meta name="keywords" content="Reallohnverlust, Inflation, Kaufkraft, Netto, Brutto, Steuerrechner, Gehaltsvergleich, Reallohn, Entgelt, Lohnentwicklung">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://madoe21.github.io/reallohn-rechner/">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Reallohnverlust-Rechner – madoe21">
+<meta property="og:description" content="Berechne deinen individuellen Reallohnverlust durch Inflation und Steuern. Jährlich konfigurierbar mit allen relevanten Parametern.">
+<meta property="og:image" content="https://madoe21.github.io/reallohn-rechner/og-image.png">
+<meta property="og:url" content="https://madoe21.github.io/reallohn-rechner/">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reallohnverlust-Rechner">
+<meta name="twitter:description" content="Berechne deinen individuellen Reallohnverlust durch Inflation und Abgaben.">
+
+<!-- Strukturierte Daten (Schema.org) für Suchmaschinen -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Reallohnverlust-Rechner",
+  "description": "Berechnet den Kaufkraftverlust durch Inflation und Steuerabgaben über mehrere Jahre.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "author": {
+    "@type": "Person",
+    "name": "madoe21"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  }
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* (Dein bestehendes CSS – ich behalte es unverändert, da es bereits gut ist) */
+:root {
+    --ink: #1a1a2e;
+    --ink-light: #3d3d5c;
+    --paper: #f5f0e8;
+    --paper-dark: #ede7d9;
+    --accent: #c0392b;
+    --accent-warm: #e67e22;
+    --accent-green: #27ae60;
+    --accent-blue: #2980b9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+}
+.header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2rem;
+}
+.header h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; }
+.header h1 span { color: var(--accent); font-style: italic; }
+.main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+.card {
+    background: white;
+    border-radius: 4px;
+    border: 1px solid var(--paper-dark);
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 1.5rem;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    font-weight: 600;
+}
+.card-body { padding: 1.5rem; }
+.card-body.collapsed { display: none; }
+.toggle-icon { font-size: 1.2rem; transition: transform 0.3s; }
+.toggle-icon.open { transform: rotate(180deg); }
+.field { margin-bottom: 1rem; }
+.field label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--ink-light); }
+.field input, .field select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--paper-dark);
+    font-family: 'DM Mono', monospace;
+}
+.year-grid { display: flex; flex-direction: column; gap: 1rem; }
+.year-row {
+    border: 1px solid var(--paper-dark);
+    border-radius: 4px;
+}
+.year-row-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--paper-dark);
+    cursor: pointer;
+    font-weight: 600;
+}
+.year-row-body { padding: 1rem; background: white; }
+.year-row-body.hidden { display: none; }
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+.btn {
+    padding: 0.5rem 1.2rem;
+    background: var(--ink);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+.btn-primary { background: var(--ink); box-shadow: 3px 3px 0 var(--accent); }
+.btn-secondary { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.results-section { margin-top: 2rem; }
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+.chart-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+canvas { max-height: 280px; width: 100%; }
+.table-wrapper { overflow-x: auto; background: white; border-radius: 8px; padding: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+th { background: var(--ink); color: white; padding: 0.5rem; text-align: right; }
+th:first-child { text-align: left; }
+td { padding: 0.5rem; text-align: right; border-bottom: 1px solid #eee; }
+td:first-child { text-align: left; font-weight: 600; }
+.neg { color: var(--accent); font-weight: 600; }
+.pos { color: var(--accent-green); font-weight: 600; }
+.zero { color: var(--ink); font-weight: normal; }
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.kpi {
+    background: white;
+    border-left: 4px solid var(--accent-blue);
+    padding: 1rem;
+}
+.kpi-value { font-size: 1.6rem; font-weight: 700; font-family: 'DM Mono', monospace; }
+.inflation-banner {
+    background: #fff3e0;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.ref-row { background: #fff0e6; }
+.hint { font-size: 0.7rem; color: #6c757d; margin-top: 0.25rem; }
+.loading { text-align: center; padding: 2rem; font-style: italic; }
+.footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 1rem;
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    border-top: 1px solid var(--paper-dark);
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Reallohn<span>verlust</span>-Rechner</h1>
+        <p>Daten aus CSV – exakte Steuerlogik, Pflegebeitrag nach Kinderzahl, Inflationsausgleich</p>
+    </div>
+
+    <div id="loading-message" class="loading">⏳ Lade Steuerdaten und Inflation aus CSV-Dateien ...</div>
+
+    <div id="app-content" style="display:none">
+        <!-- Zeitraum -->
+        <div class="card">
+            <div class="card-header" onclick="toggleCard('zeitraum')">
+                <span>📅 ① Zeitraum wählen</span>
+                <span class="toggle-icon" id="icon-zeitraum">▾</span>
+            </div>
+            <div class="card-body" id="body-zeitraum">
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                    <div class="field" style="flex:1">
+                        <label>Referenzjahr (Start)</label>
+                        <select id="ref-year" onchange="onRangeChange()"></select>
+                    </div>
+                    <div class="field" style="flex:1">
+                        <label>Zieljahr (Ende)</label>
+                        <select id="target-year" onchange="onRangeChange()"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jahreskonfiguration -->
+        <div class="card" id="card-years" style="display:none">
+            <div class="card-header" onclick="toggleCard('years')">
+                <span>💰 ② Jahresgehälter & Parameter (Brutto = Jahresbrutto)</span>
+                <span class="toggle-icon" id="icon-years">▾</span>
+            </div>
+            <div class="card-body" id="body-years">
+                <div id="year-rows-container"></div>
+                <div class="btn-row" style="margin-top:1rem">
+                    <button class="btn btn-secondary" onclick="copyAllFromFirst()">📋 Alle Jahre wie erstes Jahr</button>
+                    <button class="btn btn-primary" onclick="calculate()">📊 Reallohnverlust berechnen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ergebnisse -->
+        <div id="results-container" style="display:none"></div>
+    </div>
+    <div class="footer">
+        © 2026 madoe21 – Reallohnverlust-Rechner | Daten basierend auf BMF, GKV-Spitzenverband, Destatis
+    </div>
+</div>
+
+<script>
+// ============================================================
+// Globale Datenstrukturen (werden aus CSV befüllt)
+// ============================================================
+let TAX_DATA = {};        // key = Jahr (als String)
+let INFLATION = {};       // key = Jahr, value = Inflationsrate (als Dezimal)
+let currentYears = [];
+let charts = {};
+
+// Bundeländer für Dropdown (statisch)
+const BUNDESLAENDER = {
+    "BW": "Baden-Württemberg", "BY": "Bayern", "BE": "Berlin", "BB": "Brandenburg", "HB": "Bremen",
+    "HH": "Hamburg", "HE": "Hessen", "MV": "Mecklenburg-Vorpommern", "NI": "Niedersachsen",
+    "NW": "Nordrhein-Westfalen", "RP": "Rheinland-Pfalz", "SL": "Saarland", "SN": "Sachsen",
+    "ST": "Sachsen-Anhalt", "SH": "Schleswig-Holstein", "TH": "Thüringen"
+};
+
+// ============================================================
+// CSV-Parser
+// ============================================================
+async function loadCSV(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Fehler beim Laden von ${url}`);
+    const text = await response.text();
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const row = {};
+        headers.forEach((h, idx) => { row[h] = values[idx]; });
+        rows.push(row);
+    }
+    return rows;
+}
+
+async function loadAllData() {
+    try {
+        const taxRows = await loadCSV('tax_data.csv');
+        const inflRows = await loadCSV('inflation.csv');
+
+        for (const row of taxRows) {
+            const year = row.Jahr;
+            TAX_DATA[year] = {
+                grundfreibetrag: parseFloat(row.Grundfreibetrag),
+                kinderfreibetrag: parseFloat(row.Kinderfreibetrag),
+                kindergeld: parseFloat(row.Kindergeld_pro_Kind),
+                estg_zones: [
+                    { bis: parseFloat(row.Steuerzone1_bis), a: parseFloat(row.Steuerzone1_a), b: parseFloat(row.Steuerzone1_b) },
+                    { von: parseFloat(row.Steuerzone2_von), bis: parseFloat(row.Steuerzone2_bis), a: parseFloat(row.Steuerzone2_a), b: parseFloat(row.Steuerzone2_b), c: parseFloat(row.Steuerzone2_c) },
+                    { von: parseFloat(row.Steuerzone3_von), bis: parseFloat(row.Steuerzone3_bis), satz: parseFloat(row.Steuerzone3_satz), abzug: parseFloat(row.Steuerzone3_abzug) },
+                    { von: parseFloat(row.Steuerzone4_von), satz: parseFloat(row.Steuerzone4_satz), abzug: parseFloat(row.Steuerzone4_abzug) }
+                ],
+                soli_freigrenze_alt: row.Soli_Freigrenze_alt ? parseFloat(row.Soli_Freigrenze_alt) : undefined,
+                soli_freigrenze_einzel: row.Soli_Freigrenze_einzel ? parseFloat(row.Soli_Freigrenze_einzel) : undefined,
+                soli_freigrenze_zusammen: row.Soli_Freigrenze_zusammen ? parseFloat(row.Soli_Freigrenze_zusammen) : undefined,
+                soli_milderung: parseFloat(row.Soli_Milderung),
+                soli_satz: parseFloat(row.Soli_Satz),
+                soli_abgeschafft: row.Soli_abgeschafft === 'true',
+                rv_satz: parseFloat(row.RV_Satz),
+                rv_bbg_west: parseFloat(row.RV_BBG_West),
+                rv_bbg_ost: parseFloat(row.RV_BBG_Ost),
+                av_satz: parseFloat(row.AV_Satz),
+                kv_satz_an: parseFloat(row.KV_AN_Satz),
+                kv_bbg: parseFloat(row.KV_BBG),
+                kv_zusatz_durchschnitt: parseFloat(row.KV_Zusatz_durchschnitt),
+                pv_satz_kinderlos: parseFloat(row.PV_Satz_kinderlos),
+                pv_satz_1kind: parseFloat(row.PV_Satz_1Kind),
+                pv_satz_2kinder: parseFloat(row.PV_Satz_2Kinder),
+                pv_satz_3kinder: parseFloat(row.PV_Satz_3Kinder),
+                pv_satz_4plus: parseFloat(row.PV_Satz_4Plus),
+                pv_bbg: parseFloat(row.PV_BBG),
+                kirchensteuer_satz_bw_by: parseFloat(row.Kirchensteuer_Satz_BW_BY),
+                kirchensteuer_satz_sonstige: parseFloat(row.Kirchensteuer_Satz_sonstige)
+            };
+        }
+
+        for (const row of inflRows) {
+            INFLATION[row.Jahr] = parseFloat(row.Inflationsrate);
+        }
+
+        const years = Object.keys(TAX_DATA).map(Number).sort();
+        if (years.length === 0) throw new Error('Keine Steuerdaten geladen');
+        document.getElementById('loading-message').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        initUI();
+    } catch (err) {
+        document.getElementById('loading-message').innerHTML = `❌ Fehler beim Laden der CSV: ${err.message}<br><br>Stelle sicher, dass die Dateien <strong>tax_data.csv</strong> und <strong>inflation.csv</strong> im selben Verzeichnis liegen.`;
+        console.error(err);
+    }
+}
+
+// ============================================================
+// Steuer- und Nettoberechnung
+// ============================================================
+function calcIncomeTax(zvE, year) {
+    if (zvE <= 0) return 0;
+    const data = TAX_DATA[year];
+    const gf = data.grundfreibetrag;
+    if (zvE <= gf) return 0;
+    const x = zvE;
+    const zones = data.estg_zones;
+    const z1_end = gf + zones[0].bis;
+    if (x <= z1_end) {
+        const y = (x - gf) / 10000;
+        return Math.round((zones[0].a * y + zones[0].b) * y);
+    }
+    const z2_end = gf + zones[1].bis;
+    if (x <= z2_end) {
+        const y = (x - z1_end) / 10000;
+        const base_tax = (zones[0].a * 0.56 + zones[0].b) * 0.56;
+        return Math.round(base_tax + (zones[1].a * y + zones[1].b) * y + zones[1].c);
+    }
+    if (x <= zones[2].bis) {
+        return Math.round(zones[2].satz * x - zones[2].abzug);
+    }
+    return Math.round(zones[3].satz * x - zones[3].abzug);
+}
+
+function calcSoli(lohnsteuer, year, steuerklasse = 'I') {
+    const data = TAX_DATA[year];
+    if (data.soli_abgeschafft) {
+        const frei = (steuerklasse === 'III' || steuerklasse === 'IV') ? data.soli_freigrenze_zusammen : data.soli_freigrenze_einzel;
+        if (lohnsteuer <= frei) return 0;
+        const soli_basic = lohnsteuer * data.soli_satz;
+        const ueberhang = lohnsteuer - frei;
+        const milderung = ueberhang * data.soli_milderung;
+        return Math.round(Math.min(soli_basic, milderung));
+    } else {
+        if (lohnsteuer <= data.soli_freigrenze_alt * 12) return 0;
+        return Math.round(lohnsteuer * data.soli_satz);
+    }
+}
+
+function calcChurchTax(lohnsteuer, zvE, bundesland, year) {
+    const data = TAX_DATA[year];
+    let satz = (bundesland === 'BW' || bundesland === 'BY') ? data.kirchensteuer_satz_bw_by : data.kirchensteuer_satz_sonstige;
+    let kist = Math.round(lohnsteuer * satz);
+    const cap = Math.round(zvE * 0.035);
+    return Math.min(kist, cap);
+}
+
+function calcNettoJahr(bruttoJahr, cfg, year) {
+    const data = TAX_DATA[year];
+    const ost = (cfg.bundesland === 'BB' || cfg.bundesland === 'MV' || cfg.bundesland === 'SN' || cfg.bundesland === 'ST' || cfg.bundesland === 'TH');
+    
+    const rv_bbg = ost ? data.rv_bbg_ost : data.rv_bbg_west;
+    const rv_basis = Math.min(bruttoJahr, rv_bbg);
+    const rv = rv_basis * data.rv_satz;
+    
+    const av_basis = Math.min(bruttoJahr, rv_bbg);
+    const av = av_basis * data.av_satz;
+    
+    const kv_basis = Math.min(bruttoJahr, data.kv_bbg);
+    const zusatz = (cfg.kvZusatz || data.kv_zusatz_durchschnitt) / 100;
+    const kv_an = data.kv_satz_an + (zusatz / 2);
+    const kv = kv_basis * kv_an;
+    
+    let pv_satz;
+    if (year >= 2023) {
+        const kinder = cfg.kinderAnzahl || 0;
+        if (kinder === 0) pv_satz = data.pv_satz_kinderlos;
+        else if (kinder === 1) pv_satz = data.pv_satz_1kind;
+        else if (kinder === 2) pv_satz = data.pv_satz_2kinder;
+        else if (kinder === 3) pv_satz = data.pv_satz_3kinder;
+        else pv_satz = data.pv_satz_4plus;
+    } else {
+        if (!cfg.kinder || cfg.kinderAnzahl === 0) pv_satz = data.pv_satz_kinderlos;
+        else pv_satz = data.pv_satz_1kind;
+    }
+    if (cfg.bundesland === 'SN') pv_satz += 0.005;
+    const pv_basis = Math.min(bruttoJahr, data.pv_bbg);
+    const pv = pv_basis * pv_satz;
+    
+    const svSumme = rv + av + kv + pv;
+    
+    let zuVerstEink = bruttoJahr - 1230;
+    zuVerstEink -= rv * 0.92;
+    
+    let kindergeld = 0;
+    if (cfg.kinder && cfg.kinderAnzahl > 0) {
+        const kfb = cfg.kinderAnzahl * data.kinderfreibetrag;
+        const kg = cfg.kinderAnzahl * data.kindergeld;
+        const steuerMitFreibetrag = calcIncomeTax(Math.max(0, zuVerstEink - kfb), year);
+        const steuerOhneFreibetrag = calcIncomeTax(Math.max(0, zuVerstEink), year);
+        if (cfg.kinderFreibetragNutzen === 'ja' || (cfg.kinderFreibetragNutzen === 'auto' && steuerMitFreibetrag + kg < steuerOhneFreibetrag)) {
+            zuVerstEink = Math.max(0, zuVerstEink - kfb);
+        } else {
+            kindergeld = kg;
+        }
+    }
+    
+    let lohnsteuer = calcIncomeTax(Math.max(0, zuVerstEink), year);
+    let soli = calcSoli(lohnsteuer, year, 'I');
+    let kirche = 0;
+    if (cfg.kirche) {
+        kirche = calcChurchTax(lohnsteuer, zuVerstEink, cfg.bundesland, year);
+    }
+    const steuern = lohnsteuer + soli + kirche;
+    const nettoJahr = bruttoJahr - svSumme - steuern + kindergeld;
+    return {
+        netto: Math.max(0, nettoJahr),
+        brutto: bruttoJahr,
+        lohnsteuer, soli, kirche, svSumme, kindergeld
+    };
+}
+
+function findBruttoForNetto(targetNetto, cfgTemplate, year) {
+    let lo = 0;
+    let hi = 500000;
+    let testCfg = { ...cfgTemplate, bruttoJahr: hi };
+    if (calcNettoJahr(hi, testCfg, year).netto < targetNetto) return hi;
+    for (let iter = 0; iter < 60; iter++) {
+        const mid = (lo + hi) / 2;
+        const cfg = { ...cfgTemplate, bruttoJahr: mid };
+        const netto = calcNettoJahr(mid, cfg, year).netto;
+        if (netto < targetNetto) lo = mid;
+        else hi = mid;
+        if (hi - lo < 0.5) break;
+    }
+    return Math.round((lo + hi) / 2);
+}
+
+// ============================================================
+// UI-Logik
+// ============================================================
+function initUI() {
+    const refSel = document.getElementById('ref-year');
+    const tarSel = document.getElementById('target-year');
+    const years = Object.keys(TAX_DATA).map(Number).sort();
+    years.forEach(y => {
+        refSel.innerHTML += `<option value="${y}">${y}</option>`;
+        tarSel.innerHTML += `<option value="${y}">${y}</option>`;
+    });
+    refSel.value = '2020';
+    tarSel.value = '2025';
+    onRangeChange();
+}
+
+function toggleCard(id) {
+    const body = document.getElementById(`body-${id}`);
+    const icon = document.getElementById(`icon-${id}`);
+    body.classList.toggle('collapsed');
+    icon.classList.toggle('open');
+}
+
+function onRangeChange() {
+    const ref = parseInt(document.getElementById('ref-year').value);
+    const tar = parseInt(document.getElementById('target-year').value);
+    if (!ref || !tar || tar <= ref) {
+        document.getElementById('card-years').style.display = 'none';
+        return;
+    }
+    currentYears = [];
+    for (let y = ref; y <= tar; y++) currentYears.push(y);
+    document.getElementById('card-years').style.display = 'block';
+    buildYearRows();
+}
+
+function buildYearRows() {
+    const container = document.getElementById('year-rows-container');
+    const saved = {};
+    container.querySelectorAll('.year-row').forEach(row => { saved[row.dataset.year] = getYearConfig(row.dataset.year); });
+    container.innerHTML = '';
+    currentYears.forEach((year, idx) => {
+        const prev = idx > 0 ? saved[currentYears[idx-1]] : null;
+        container.appendChild(createYearRow(year, prev));
+    });
+}
+
+function createYearRow(year, prefill) {
+    const div = document.createElement('div');
+    div.className = 'year-row';
+    div.dataset.year = year;
+    const isFirst = year === currentYears[0];
+    const p = prefill || {};
+    const defaultBrutto = p.bruttoJahr || (isFirst ? 50000 : 50000);
+    div.innerHTML = `
+        <div class="year-row-header" onclick="toggleYearRow(${year})">
+            <span>${year} ${isFirst ? '⭐ Referenz' : ''}</span>
+            <span style="font-size:0.8rem">▼</span>
+        </div>
+        <div class="year-row-body" id="yr-body-${year}">
+            <div class="detail-grid">
+                <div class="field"><label>Brutto-Jahresgehalt (€)</label><input type="number" id="${year}-brutto" value="${defaultBrutto}" step="1000" min="0"></div>
+                <div class="field"><label>Bundesland</label><select id="${year}-bundesland">${Object.entries(BUNDESLAENDER).map(([k,v]) => `<option value="${k}" ${(p.bundesland||'BW')===k?'selected':''}>${v}</option>`).join('')}</select></div>
+                <div class="field"><label>KK-Zusatzbeitrag (%)</label><input type="number" id="${year}-zusatz" value="${p.kvZusatz !== undefined ? p.kvZusatz : (TAX_DATA[year].kv_zusatz_durchschnitt)}" step="0.1" min="0"></div>
+            </div>
+            <div class="detail-grid" style="margin-top:0.5rem">
+                <div><label><input type="checkbox" id="${year}-kirche" ${p.kirche !== undefined ? (p.kirche ? 'checked' : '') : 'checked'} onchange="updateKircheUI(${year})"> Kirchensteuerpflichtig</label></div>
+                <div><label><input type="checkbox" id="${year}-kinder-cb" ${p.kinder ? 'checked' : ''} onchange="updateKinderUI(${year})"> Kinder vorhanden</label></div>
+                <div id="${year}-kinder-detail" style="${p.kinder ? '' : 'display:none'}">
+                    <input type="number" id="${year}-kind-anzahl" value="${p.kinderAnzahl || 1}" min="1" step="1" style="width:80px"> Kinder<br>
+                    <select id="${year}-kinderfb"><option value="auto" ${(p.kinderFreibetragNutzen||'auto')==='auto'?'selected':''}>Günstigerprüfung</option><option value="ja" ${p.kinderFreibetragNutzen==='ja'?'selected':''}>Freibetrag</option><option value="nein" ${p.kinderFreibetragNutzen==='nein'?'selected':''}>Kindergeld</option></select>
+                </div>
+            </div>
+        </div>
+    `;
+    return div;
+}
+
+function toggleYearRow(year) {
+    const body = document.getElementById(`yr-body-${year}`);
+    body.classList.toggle('hidden');
+}
+function updateKircheUI(year) { /* placeholder */ }
+function updateKinderUI(year) {
+    const cb = document.getElementById(`${year}-kinder-cb`);
+    document.getElementById(`${year}-kinder-detail`).style.display = cb.checked ? '' : 'none';
+}
+function getYearConfig(year) {
+    const get = id => document.getElementById(`${year}-${id}`);
+    if (!get('brutto')) return null;
+    return {
+        bruttoJahr: parseFloat(get('brutto').value) || 0,
+        bundesland: get('bundesland').value,
+        kvZusatz: parseFloat(get('zusatz').value) || 0,
+        kirche: get('kirche').checked,
+        kinder: get('kinder-cb').checked,
+        kinderAnzahl: parseInt(get('kind-anzahl')?.value) || 0,
+        kinderFreibetragNutzen: get('kinderfb')?.value || 'auto'
+    };
+}
+function copyAllFromFirst() {
+    if (currentYears.length < 2) return;
+    const firstCfg = getYearConfig(currentYears[0]);
+    for (let i = 1; i < currentYears.length; i++) {
+        const y = currentYears[i];
+        document.getElementById(`${y}-brutto`).value = firstCfg.bruttoJahr;
+        document.getElementById(`${y}-bundesland`).value = firstCfg.bundesland;
+        document.getElementById(`${y}-zusatz`).value = firstCfg.kvZusatz;
+        document.getElementById(`${y}-kirche`).checked = firstCfg.kirche;
+        document.getElementById(`${y}-kinder-cb`).checked = firstCfg.kinder;
+        updateKinderUI(y);
+        if (firstCfg.kinder) document.getElementById(`${y}-kind-anzahl`).value = firstCfg.kinderAnzahl;
+        document.getElementById(`${y}-kinderfb`).value = firstCfg.kinderFreibetragNutzen;
+    }
+}
+
+function calculate() {
+    if (currentYears.length < 2) return;
+    const refYear = currentYears[0];
+    let inflIndex = 1.0;
+    const inflFactors = { [refYear]: 1.0 };
+    for (let i = 1; i < currentYears.length; i++) {
+        const y = currentYears[i];
+        inflIndex *= (1 + INFLATION[y]);
+        inflFactors[y] = inflIndex;
+    }
+    const results = [];
+    const refCfg = getYearConfig(refYear);
+    const refNetto = calcNettoJahr(refCfg.bruttoJahr, refCfg, refYear).netto;
+    for (const year of currentYears) {
+        const cfg = getYearConfig(year);
+        const { netto, brutto } = calcNettoJahr(cfg.bruttoJahr, cfg, year);
+        let nettoSoll = Math.round(refNetto * inflFactors[year]);
+        // Im Referenzjahr muss nettoSoll = nettoIst sein
+        if (year === refYear) nettoSoll = netto;
+        const nettoDiff = netto - nettoSoll;
+        const verlustPct = nettoSoll > 0 ? (nettoDiff / nettoSoll) * 100 : 0;
+        const cfgWithoutBrutto = { ...cfg };
+        delete cfgWithoutBrutto.bruttoJahr;
+        let bruttoSoll = findBruttoForNetto(nettoSoll, cfgWithoutBrutto, year);
+        results.push({ year, bruttoIst: brutto, bruttoSoll, nettoIst: netto, nettoSoll, nettoDiff, verlustPct, inflPct: (inflFactors[year]-1)*100 });
+    }
+    renderResults(results, refYear);
+}
+
+function formatEuro(value) {
+    return value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+function renderResults(results, refYear) {
+    const container = document.getElementById('results-container');
+    const last = results[results.length-1];
+    container.style.display = 'block';
+    let tableRows = '';
+    for (const r of results) {
+        const diffClass = r.nettoDiff === 0 ? 'zero' : (r.nettoDiff < 0 ? 'neg' : 'pos');
+        const verlustClass = r.verlustPct === 0 ? 'zero' : (r.verlustPct < 0 ? 'neg' : 'pos');
+        tableRows += `<tr class="${r.year===refYear?'ref-row':''}">
+            <td>${r.year}${r.year===refYear?' ⭐':''}</td>
+            <td>${formatEuro(r.bruttoIst)}</td>
+            <td>${formatEuro(r.bruttoSoll)}</td>
+            <td>${formatEuro(r.nettoIst)}</td>
+            <td>${formatEuro(r.nettoSoll)}</td>
+            <td class="${diffClass}">${r.nettoDiff === 0 ? '0,00 €' : (r.nettoDiff > 0 ? '+' : '') + formatEuro(Math.abs(r.nettoDiff))}</td>
+            <td class="${verlustClass}">${r.verlustPct === 0 ? '0,00 %' : (r.verlustPct > 0 ? '+' : '') + r.verlustPct.toFixed(2) + ' %'}</td>
+            <td>${r.inflPct.toFixed(2)} %</td>
+        </tr>`;
+    }
+    container.innerHTML = `
+        <div class="results-header" style="display:flex; justify-content:space-between">
+            <h2>📊 Reallohnanalyse</h2>
+            <button class="btn btn-secondary" onclick="document.getElementById('card-years').scrollIntoView({behavior:'smooth'})">← Bearbeiten</button>
+        </div>
+        <div class="inflation-banner">
+            <span style="font-size:2rem;">📈</span>
+            <div><strong>Kumulierte Inflation ${results[0].year}–${results[results.length-1].year}: ${last.inflPct.toFixed(2)}%</strong><br>Dein Netto müsste inflationsbereinigt um diesen Prozentsatz steigen.</div>
+        </div>
+        <div class="kpi-grid">
+            <div class="kpi"><div class="kpi-label">Reallohnverlust</div><div class="kpi-value">${last.verlustPct.toFixed(2)}%</div><div>${formatEuro(Math.abs(last.nettoDiff))} pro Jahr</div></div>
+            <div class="kpi"><div class="kpi-label">Ist-Netto ${last.year}</div><div class="kpi-value">${formatEuro(last.nettoIst)}</div></div>
+            <div class="kpi"><div class="kpi-label">Soll-Netto ${last.year}</div><div class="kpi-value">${formatEuro(last.nettoSoll)}</div></div>
+            <div class="kpi"><div class="kpi-label">Brutto-Lücke</div><div class="kpi-value">${formatEuro(Math.abs(last.bruttoSoll - last.bruttoIst))}</div></div>
+        </div>
+        <div class="charts-grid">
+            <div class="chart-card"><div class="chart-title">💰 Brutto vs. Netto (Ist)</div><canvas id="chart-brutto-netto"></canvas></div>
+            <div class="chart-card"><div class="chart-title">📈 Inflation pro Jahr</div><canvas id="chart-inflation"></canvas></div>
+            <div class="chart-card"><div class="chart-title">⚠️ Ist-Netto vs. Soll-Netto (Reallohnverlust als Fläche)</div><canvas id="chart-ist-soll"></canvas></div>
+        </div>
+        <div class="table-wrapper"> <table> <thead> <tr><th>Jahr</th><th>Ist-Brutto</th><th>Soll-Brutto*</th><th>Ist-Netto</th><th>Soll-Netto**</th><th>Netto-Differenz</th><th>Verlust %</th><th>Inflation kum.</th> </tr> </thead> <tbody>${tableRows}</tbody> </table> </div>
+        <div class="hint" style="margin-top:0.5rem">* Soll-Brutto = exakt berechnet, um das Soll-Netto zu erreichen (gleiche Steuerparameter).<br>** Soll-Netto = inflationsbereinigtes Netto des Referenzjahres.</div>
+    `;
+    drawCharts(results);
+}
+
+function drawCharts(results) {
+    const years = results.map(r => r.year);
+    // Chart 1: Brutto/Netto
+    const ctx1 = document.getElementById('chart-brutto-netto')?.getContext('2d');
+    if (ctx1) {
+        if (charts.bruttoNetto) charts.bruttoNetto.destroy();
+        charts.bruttoNetto = new Chart(ctx1, {
+            type: 'bar', data: { labels: years, datasets: [
+                { label: 'Brutto-Jahresgehalt', data: results.map(r=>r.bruttoIst), backgroundColor: '#2980b9' },
+                { label: 'Netto-Jahresgehalt', data: results.map(r=>r.nettoIst), backgroundColor: '#27ae60' }
+            ]}, options: { responsive: true, scales: { y: { ticks: { callback: v => (v/1000).toFixed(0)+'k €' } } } }
+        });
+    }
+    // Chart 2: Inflation mit beginAtZero
+    const ctx2 = document.getElementById('chart-inflation')?.getContext('2d');
+    if (ctx2) {
+        if (charts.inflation) charts.inflation.destroy();
+        const annualInfl = results.slice(1).map((r,i)=> r.inflPct - results[i].inflPct);
+        charts.inflation = new Chart(ctx2, {
+            type: 'line', data: { labels: years.slice(1), datasets: [
+                { label: 'Jährliche Inflation', data: annualInfl, borderColor: '#e74c3c', fill: true, backgroundColor: 'rgba(231,76,60,0.1)' },
+                { label: 'Kumulierte Inflation', data: results.map(r=>r.inflPct), borderColor: '#e67e22', borderDash: [5,5], yAxisID: 'y1', fill: false }
+            ]}, options: { responsive: true, scales: { y: { beginAtZero: true, title: { display: true, text: '%' }, ticks: { callback: v => v.toFixed(1)+'%' } }, y1: { position: 'right', title: { text: 'kum. %' }, grid: { drawOnChartArea: false }, ticks: { callback: v => v.toFixed(1)+'%' } } } }
+        });
+    }
+    // Chart 3: Ist vs Soll mit farblicher Füllung des Verlustbereichs
+    const ctx3 = document.getElementById('chart-ist-soll')?.getContext('2d');
+    if (ctx3) {
+        if (charts.istSoll) charts.istSoll.destroy();
+        charts.istSoll = new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Ist-Netto (tatsächlich)',
+                        data: results.map(r => r.nettoIst),
+                        borderColor: '#3498db',
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: 'white',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Soll-Netto (inflationsbereinigt)',
+                        data: results.map(r => r.nettoSoll),
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#e74c3c',
+                        pointBorderColor: 'white',
+                        borderWidth: 2,
+                        borderDash: [8, 4]
+                    },
+                    {
+                        label: 'Reallohnverlust (Differenz)',
+                        data: results.map(r => r.nettoSoll),
+                        type: 'line',
+                        fill: '-1',          // füllt bis zum vorherigen Dataset (Ist-Netto)
+                        backgroundColor: 'rgba(231, 76, 60, 0.25)',
+                        borderWidth: 0,
+                        pointRadius: 0,
+                        tension: 0.3,
+                        order: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                if (ctx.dataset.label === 'Reallohnverlust (Differenz)') return null;
+                                let label = `${ctx.dataset.label}: ${ctx.raw.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+                                if (ctx.dataset.label === 'Ist-Netto (tatsächlich)') {
+                                    const result = results[ctx.dataIndex];
+                                    const diff = result.nettoDiff;
+                                    label += ` (${diff === 0 ? '0,00' : (diff > 0 ? '+' : '') + diff.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € vs. Soll)`;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: { callback: v => (v / 1000).toFixed(0) + 'k €' },
+                        title: { display: true, text: 'Netto-Jahresgehalt (€)' }
+                    }
+                }
+            }
+        });
+    }
+}
+
+loadAllData();
+</script>
+</body>
+</html>
