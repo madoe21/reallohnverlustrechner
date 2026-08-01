@@ -1,5 +1,7 @@
 # Reallohnverlust-Rechner
 
+[![Built with aiflow](https://img.shields.io/badge/built%20with-aiflow-6b46c1)](https://github.com/cyber93de/aiflow)
+
 This project includes a real wage loss calculator for Germany. This means, among other things, that it takes into account varying tax and social security contribution burdens and factors in cumulative inflation starting from the specified reference year.
 
 [Open](https://madoe21.github.io/reallohnverlustrechner/)
@@ -31,3 +33,8 @@ I appreciate everyone who supports me and the project! For any requests and sugg
     <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" height="50" alt="PayPal">
   </a>
 </p>
+---
+
+## Built with aiflow
+
+This project was built with support from **[aiflow](https://cyber93de.github.io/aiflow/)** — *built with aiflow*.
